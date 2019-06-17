@@ -19,9 +19,20 @@ final class SchemaUtils {
     private static final RuntimeWiring noop = RuntimeWiring.newRuntimeWiring().build();
 
     static GraphQLSchema buildSchema(String sdl) {
-        TypeDefinitionRegistry typeRegistry = new SchemaParser().parse(sdl);
-        typeRegistry.addAll(FederationDirectives.allDefinitions);
-        return new SchemaGenerator().makeExecutableSchema(typeRegistry, noop);
+        final TypeDefinitionRegistry typeRegistry = new SchemaParser().parse(sdl);
+
+        final RuntimeWiring wiring = RuntimeWiring.newRuntimeWiring()
+                .scalar(_FieldSet.type)
+                .build();
+
+        final SchemaGenerator.Options options = SchemaGenerator.Options
+                .defaultOptions()
+                .enforceSchemaDirectives(false);
+
+        return new SchemaGenerator().makeExecutableSchema(
+                options,
+                typeRegistry,
+                wiring);
     }
 
     static String printSchema(GraphQLSchema schema) {
